@@ -35,7 +35,7 @@ namespace valami.valami.Components
 
         private SeedManager() { }
 
-        public void CreateBid(Seed seed)
+        public void CreateSeed(Seed seed)
         {
             using (var context = DataContext.Instance())
             {
@@ -44,7 +44,7 @@ namespace valami.valami.Components
             }
         }
 
-        public IEnumerable<Seed> GetBidsByItemId(int seedId)
+        public IEnumerable<Seed> GetSeedsByItemId(int seedId)
         {
             using (var context = DataContext.Instance())
             {
