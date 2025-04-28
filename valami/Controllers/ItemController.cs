@@ -25,6 +25,7 @@ namespace valami.valami.Controllers
     [DnnHandleError]
     public class ItemController : DnnController
     {
+        
 
         public ActionResult Delete(int itemId)
         {
@@ -53,6 +54,7 @@ namespace valami.valami.Controllers
         [DotNetNuke.Web.Mvc.Framework.ActionFilters.ValidateAntiForgeryToken]
         public ActionResult Edit(Item item)
         {
+
             if (item.ItemId == -1)
             {
                 item.CreatedByUserId = User.UserID;

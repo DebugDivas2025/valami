@@ -53,6 +53,7 @@ namespace valami.valami.Components
             }
         }
 
+    }
         internal class ItemManager : ServiceLocator<IItemManager, ItemManager>, IItemManager
     {
         public void CreateItem(Item t)

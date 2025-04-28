@@ -1,0 +1,26 @@
+﻿@inherits DotNetNuke.Web.Mvc.Framework.DnnWebViewPage<IEnumerable<valami.valami.Models.Order>>
+
+@*@using System.Linq*@
+@using System.Text.RegularExpressions
+@using DotNetNuke.Web.Mvc.Helpers
+@using DotNetNuke.Entities.Users
+@using DotNetNuke.Framework.JavaScriptLibraries
+
+@{
+    var userId = UserController.Instance.GetCurrentUserInfo().UserID;
+}
+
+<div id="Order-@Dnn.ModuleContext.ModuleId">
+    <div class="form-group">
+        <label for="orderSelector">Válassz egy rendelést:</label>
+        <select id="orderSelector" class="form-control">
+            <option value="">-- Kérlek válassz --</option>
+            @foreach (var order in Model)
+            {
+                <option value="@order.Id">
+                    Rendelés: @order.Id
+                </option>
+            }
+        </select>
+    </div>
+</div>

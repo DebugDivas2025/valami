@@ -128,7 +128,9 @@
       <DependentUpon>Settings.resx</DependentUpon>
     </Compile>
     <Compile Include="Components\FeatureController.cs" />
+    <Compile Include="Components\OrderManager.cs" />
     <Compile Include="Components\ItemManager.cs" />
+    <Compile Include="Controllers\OrderController.cs" />
     <Compile Include="Controllers\SettingsController.cs" />
     <Compile Include="Models\Order.cs" />
     <Compile Include="Models\Seed.cs" />
@@ -178,6 +180,7 @@
     <Content Include="Views\Item\Index.cshtml" />
     <Content Include="Views\Item\Edit.cshtml" />
     <Content Include="Views\Settings\Settings.cshtml" />
+    <Content Include="Views\Order\Index.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

@@ -36,18 +36,6 @@ ALTER TABLE {databaseOwner}{objectQualifier}valami_Items ADD CONSTRAINT
 
 GO
 
-IF  EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'{databaseOwner}[{objectQualifier}valami_Items]') AND type in (N'U'))
-DROP TABLE {databaseOwner}[{objectQualifier}valami_Seeds]
-GO
-
-CREATE TABLE {databaseOwner}{objectQualifier}valami_Seeds
-    (
-    SeedId int NOT NULL IDENTITY (1, 1),
-    ItemId int NOT NULL,
-    UserId int NOT NULL,
-    OrderTime datetime NOT NULL
-    FOREIGN KEY (ItemId) REFERENCES {databaseOwner}{objectQualifier}valami_Items(ItemId)
-GO
 
 
 /************************************************************/
