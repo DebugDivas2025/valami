@@ -82,8 +82,7 @@ namespace valami.valami.Controllers
         [ModuleAction(ControlKey = "Edit", TitleKey = "AddItem")]
         public ActionResult Index()
         {
-            var items = ItemManager.Instance.GetItems(ModuleContext.ModuleId);
-            return View(items);
+            return RedirectToAction("Index", "Order");
         }
     }
 }
