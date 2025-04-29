@@ -9,12 +9,13 @@
 @{
     var userId = UserController.Instance.GetCurrentUserInfo().UserID;
     var plantingCategories = ViewBag.PlantingCategories as IEnumerable<valami.valami.Models.PlantingCalendar>;
-    //var selectedCategoryId = ViewBag.SelectedCategoryId as int?;
-    //var selectedCategory = plantingCategories?.FirstOrDefault(c => c.Id == selectedCategoryId);
+    var selectedCategoryId = ViewBag.SelectedCategoryId as int?;
+    var selectedCategory = ViewBag.SelectedCategory as valami.valami.Models.PlantingCalendar;
 
-    //DateTime currentDate = DateTime.Now; // Current month
-    //DateTime firstDayOfMonth = new DateTime(currentDate.Year, currentDate.Month, 1);
-    //int daysInMonth = DateTime.DaysInMonth(currentDate.Year, currentDate.Month);
+    var json = new System.Web.Script.Serialization.JavaScriptSerializer();
+    DateTime currentDate = DateTime.Now; // Current month
+    DateTime firstDayOfMonth = new DateTime(currentDate.Year, currentDate.Month, 1);
+    int daysInMonth = DateTime.DaysInMonth(currentDate.Year, currentDate.Month);
 }
 
 <div id="Order-@Dnn.ModuleContext.ModuleId">
@@ -30,7 +31,7 @@
             }
         </select>
     </div>
-    <@if (plantingCategories != null)
+    @if (plantingCategories != null)
 {
     <div class="form-group">
         <label for="plantingCategorySelector">Válassz egy növény kategóriát:</label>
@@ -49,7 +50,7 @@ else
 {
     <p>Nincs elérhető növénykategória.</p>
 }
-    @*<div id="calendar-container">
+    <div id="calendar-container">
             <table id="calendar" class="table table-bordered">
                 <thead>
                     <tr>
@@ -84,16 +85,15 @@ else
                     }
                 </tbody>
             </table>
-        </div>*@
+        </div>
 </div>
 
-@*@section Scripts {
-<script>
+@section Scripts {
+    <script>
         $(document).ready(function () {
-            var orders = @Html.Raw(Json.Serialize(Model)); // All orders data
-            var selectedCategory = @Html.Raw(Json.Serialize(selectedCategory));
+            var orders = @Html.Raw(json.Serialize(Model));
+            var selectedCategory = @Html.Raw(json.Serialize(selectedCategory));
 
-            // This is just an example, you should fetch the real order data dynamically
             var orderDate = new Date('2025-04-25'); // Example order date
             var wateringInterval = selectedCategory ? selectedCategory.WateringIntervalDays : 7; // Default watering interval if category is not selected
 
@@ -114,5 +114,5 @@ else
                 wateringDate.setDate(wateringDate.getDate() + wateringInterval); // Move to the next watering date
             }
         });
-</script>
-}*@
+    </script>
+}

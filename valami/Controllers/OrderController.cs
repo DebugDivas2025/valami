@@ -29,10 +29,17 @@ namespace valami.valami.Controllers
         public ActionResult Index()
         {
             var orders = OrderManager.Instance.GetOrders()
-                            .Where(o => o.UserId == User.UserID) // Csak a saját rendeléseit látja
+                            .Where(o => o.UserId == User.UserID)
                             .OrderByDescending(o => o.TimeOfOrder);
 
             var plantingCategories = PlantingCalendarManager.Instance.GetPlantingCalendars();
+
+            int? selectedCategoryId = plantingCategories?.FirstOrDefault()?.Id;
+            ViewBag.SelectedCategoryId = selectedCategoryId;
+
+            // ➕ Itt történik a konkrét kiválasztás
+            var selectedCategory = plantingCategories?.FirstOrDefault(c => c.Id == selectedCategoryId);
+            ViewBag.SelectedCategory = selectedCategory;
 
             //// Passing both orders and categories to the view
             ViewBag.PlantingCategories = plantingCategories;
