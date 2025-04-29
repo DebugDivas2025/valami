@@ -27,33 +27,33 @@ namespace valami.valami.Components
         void UpdateItem(Item t);
     }
 
-    public class SeedManager
-    {
-        private static readonly SeedManager _instance = new SeedManager();
+    //public class SeedManager
+    //{
+    //    private static readonly SeedManager _instance = new SeedManager();
 
-        public static SeedManager Instance => _instance;
+    //    public static SeedManager Instance => _instance;
 
-        private SeedManager() { }
+    //    private SeedManager() { }
 
-        public void CreateSeed(Seed seed)
-        {
-            using (var context = DataContext.Instance())
-            {
-                var repo = context.GetRepository<Seed>();
-                repo.Insert(seed);
-            }
-        }
+    //    public void CreateSeed(Seed seed)
+    //    {
+    //        using (var context = DataContext.Instance())
+    //        {
+    //            var repo = context.GetRepository<Seed>();
+    //            repo.Insert(seed);
+    //        }
+    //    }
 
-        public IEnumerable<Seed> GetSeedsByItemId(int seedId)
-        {
-            using (var context = DataContext.Instance())
-            {
-                var repo = context.GetRepository<Seed>();
-                return repo.Get(seedId);
-            }
-        }
+    //    public IEnumerable<Seed> GetSeedsByItemId(int seedId)
+    //    {
+    //        using (var context = DataContext.Instance())
+    //        {
+    //            var repo = context.GetRepository<Seed>();
+    //            return repo.Get(seedId);
+    //        }
+    //    }
 
-    }
+    //}
         internal class ItemManager : ServiceLocator<IItemManager, ItemManager>, IItemManager
     {
         public void CreateItem(Item t)

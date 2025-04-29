@@ -8,6 +8,13 @@
 
 @{
     var userId = UserController.Instance.GetCurrentUserInfo().UserID;
+    var plantingCategories = ViewBag.PlantingCategories as IEnumerable<valami.valami.Models.PlantingCalendar>;
+    //var selectedCategoryId = ViewBag.SelectedCategoryId as int?;
+    //var selectedCategory = plantingCategories?.FirstOrDefault(c => c.Id == selectedCategoryId);
+
+    //DateTime currentDate = DateTime.Now; // Current month
+    //DateTime firstDayOfMonth = new DateTime(currentDate.Year, currentDate.Month, 1);
+    //int daysInMonth = DateTime.DaysInMonth(currentDate.Year, currentDate.Month);
 }
 
 <div id="Order-@Dnn.ModuleContext.ModuleId">
@@ -23,4 +30,89 @@
             }
         </select>
     </div>
+    <@if (plantingCategories != null)
+{
+    <div class="form-group">
+        <label for="plantingCategorySelector">Válassz egy növény kategóriát:</label>
+        <select id="plantingCategorySelector" class="form-control">
+            <option value="">-- Kérlek válassz --</option>
+            @foreach (var category in plantingCategories)
+            {
+                <option value="@category.Id">
+                    Növény típusa: @category.PlantType
+                </option>
+            }
+        </select>
+    </div>
+}
+else
+{
+    <p>Nincs elérhető növénykategória.</p>
+}
+    @*<div id="calendar-container">
+            <table id="calendar" class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Hétfő</th>
+                        <th>Kedd</th>
+                        <th>Szerda</th>
+                        <th>Csütörtök</th>
+                        <th>Péntek</th>
+                        <th>Szombat</th>
+                        <th>Vasárnap</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < (daysInMonth + (int)firstDayOfMonth.DayOfWeek - 1) / 7 + 1; i++)
+                    {
+                        <tr>
+                            @for (int j = 0; j < 7; j++)
+                            {
+                                int dayOfMonth = i * 7 + j - (int)firstDayOfMonth.DayOfWeek + 1;
+                                if (dayOfMonth > 0 && dayOfMonth <= daysInMonth)
+                                {
+                                    <td id="day-@dayOfMonth" class="calendar-day">
+                                        @dayOfMonth
+                                    </td>
+                                }
+                                else
+                                {
+                                    <td></td>
+                                }
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>*@
 </div>
+
+@*@section Scripts {
+<script>
+        $(document).ready(function () {
+            var orders = @Html.Raw(Json.Serialize(Model)); // All orders data
+            var selectedCategory = @Html.Raw(Json.Serialize(selectedCategory));
+
+            // This is just an example, you should fetch the real order data dynamically
+            var orderDate = new Date('2025-04-25'); // Example order date
+            var wateringInterval = selectedCategory ? selectedCategory.WateringIntervalDays : 7; // Default watering interval if category is not selected
+
+            // Calculate planting date (3 days after order date)
+            var plantingDate = new Date(orderDate);
+            plantingDate.setDate(orderDate.getDate() + 3); // Add 3 days to order date
+
+            // Highlight the order date (red)
+            $("#day-" + orderDate.getDate()).addClass("order-date");
+
+            // Highlight the planting date (red)
+            $("#day-" + plantingDate.getDate()).addClass("planting-date");
+
+            // Highlight watering dates (blue)
+            var wateringDate = new Date(plantingDate);
+            while (wateringDate.getMonth() == plantingDate.getMonth()) {
+                $("#day-" + wateringDate.getDate()).addClass("watering-date");
+                wateringDate.setDate(wateringDate.getDate() + wateringInterval); // Move to the next watering date
+            }
+        });
+</script>
+}*@

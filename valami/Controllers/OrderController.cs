@@ -14,6 +14,7 @@ using DotNetNuke.Entities.Users;
 using DotNetNuke.Framework.JavaScriptLibraries;
 using DotNetNuke.Web.Mvc.Framework.ActionFilters;
 using DotNetNuke.Web.Mvc.Framework.Controllers;
+using Hotcakes.Modules.Core.Admin.Configuration;
 using System;
 using System.Linq;
 using System.Web.Mvc;
@@ -31,6 +32,10 @@ namespace valami.valami.Controllers
                             .Where(o => o.UserId == User.UserID) // Csak a saját rendeléseit látja
                             .OrderByDescending(o => o.TimeOfOrder);
 
+            var plantingCategories = PlantingCalendarManager.Instance.GetPlantingCalendars();
+
+            //// Passing both orders and categories to the view
+            ViewBag.PlantingCategories = plantingCategories;
             return View(orders);
         }
     }
