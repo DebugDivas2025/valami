@@ -14,6 +14,7 @@ using DotNetNuke.Data;
 using DotNetNuke.Framework;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using valami.valami.Models;
 
@@ -26,17 +27,25 @@ namespace valami.valami.Components
 
     internal class PlantingCalendarManager : ServiceLocator<IPlantingCalendarManager, PlantingCalendarManager>, IPlantingCalendarManager
     {
+        //public IEnumerable<PlantingCalendar> GetPlantingCalendars()
+        //{
+        //    IEnumerable<PlantingCalendar> t;
+        //    using (IDataContext ctx = DataContext.Instance())
+        //    {
+        //        var rep = ctx.GetRepository<PlantingCalendar>();
+        //        t = rep.Get().ToList(); // Fontos!
+        //    }
+        //    return t;
+        //}
         public IEnumerable<PlantingCalendar> GetPlantingCalendars()
         {
-            IEnumerable<PlantingCalendar> t;
-            using (IDataContext ctx = DataContext.Instance())
+            System.Diagnostics.Debug.WriteLine("🌱 GetPlantingCalendars meghívva");
+            using (var ctx = DataContext.Instance())
             {
-                var rep = ctx.GetRepository<PlantingCalendar>();
-                t = rep.Get().ToList(); // Fontos!
+                var sql = "SELECT * FROM PlantingCalendar";
+                return ctx.ExecuteQuery<PlantingCalendar>(CommandType.Text, sql).ToList();
             }
-            return t;
         }
-
         protected override Func<IPlantingCalendarManager> GetFactory()
         {
             return () => new PlantingCalendarManager();

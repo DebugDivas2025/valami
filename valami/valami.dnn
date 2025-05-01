@@ -52,7 +52,7 @@
                 <moduleControls>
                   <moduleControl>
                     <controlKey />
-                    <controlSrc>valami.valami.Controllers/Order/Index.mvc</controlSrc>
+                    <controlSrc>Order/Index.mvc</controlSrc>
                     <supportsPartialRendering>False</supportsPartialRendering>
                     <controlTitle />
                     <controlType>View</controlType>
@@ -60,7 +60,7 @@
                     <helpUrl />
                     <viewOrder>0</viewOrder>
                   </moduleControl>
-                  <moduleControl>
+                  <!--<moduleControl>
                     <controlKey>Edit</controlKey>
                     <controlSrc>valami.valami.Controllers/Item/Edit.mvc</controlSrc>
                     <supportsPartialRendering>False</supportsPartialRendering>
@@ -80,7 +80,7 @@
                     <iconFile />
                     <helpUrl />
                     <viewOrder>0</viewOrder>
-                  </moduleControl>
+                  </moduleControl>-->
                 </moduleControls>
               </moduleDefinition>
             </moduleDefinitions>

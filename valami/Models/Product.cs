@@ -18,21 +18,14 @@ using System.Web.Caching;
 
 namespace valami.valami.Models
 {
-    [TableName("PlantingCalendar")]
-    //setup the primary key for table
+    [TableName("hcc_Product")]
     [PrimaryKey("Id", AutoIncrement = true)]
-    //configure caching using PetaPoco
-    //[Cacheable("PlantingCalendars", CacheItemPriority.Default, 20)]
-    //scope the objects to the ModuleId of a module on a page (or copy of a module on a page)
+    [Cacheable("LineItem", CacheItemPriority.Default, 20)]
     //[Scope("ModuleId")]
-    public class PlantingCalendar
+    public class Product
     {
         public int Id { get; set; }
-        public int ProductPropertyId { get; set; }
-        public string PlantType { get; set; }
-        public int SuggestedPlantingMonth { get; set; }
-        public int WateringIntervalDays { get; set; }
-        public int RepottingIntervalMonths { get; set; }
-        public string CareNotes { get; set; }
+        public string bvin { get; set; }
+        public string SKU { get; set; }
     }
 }

@@ -28,6 +28,7 @@ namespace valami.valami.Models
     public class Order
     {
         public int Id { get; set; }
+        public string bvin { get; set; }
         public int UserId { get; set; }
         public string UserEmail { get; set; }
         public DateTime TimeOfOrder { get; set; }

@@ -6,52 +6,153 @@
 @using DotNetNuke.Entities.Users
 @using DotNetNuke.Framework.JavaScriptLibraries
 
-@{
-    var userId = UserController.Instance.GetCurrentUserInfo().UserID;
-    var plantingCategories = ViewBag.PlantingCategories as IEnumerable<valami.valami.Models.PlantingCalendar>;
-    var selectedCategoryId = ViewBag.SelectedCategoryId as int?;
-    var selectedCategory = ViewBag.SelectedCategory as valami.valami.Models.PlantingCalendar;
+<style>
+    .calendar-wrapper {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-top: 2rem;
+    }
 
-    var json = new System.Web.Script.Serialization.JavaScriptSerializer();
-    DateTime currentDate = DateTime.Now; // Current month
-    DateTime firstDayOfMonth = new DateTime(currentDate.Year, currentDate.Month, 1);
-    int daysInMonth = DateTime.DaysInMonth(currentDate.Year, currentDate.Month);
+    .calendar-box {
+        flex: 1;
+        border-radius: 20px;
+        overflow: hidden;
+        border: 2px solid #3b240d;
+        box-shadow: 0 0 10px #ccc;
+    }
+
+    #calendar {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        #calendar th,
+        #calendar td {
+            text-align: center;
+            border: 1px solid #ddd;
+            padding: 10px;
+            height: 80px;
+            width: 14.28%;
+            vertical-align: top;
+            position: relative;
+        }
+
+        #calendar th {
+            background-color: #3b240d;
+            color: white;
+            font-weight: bold;
+        }
+
+    .calendar-day {
+        font-size: 1.1rem;
+    }
+
+    .order-date {
+        background-color: #ff9999 !important;
+        font-weight: bold;
+    }
+
+    .planting-date {
+        background-color: #ffcc99 !important;
+        font-weight: bold;
+    }
+
+    .watering-date {
+        background-color: #99ecff !important;
+    }
+
+    .repotting-date {
+        background-color: #cc99ff !important;
+    }
+
+    .combined-date {
+        background-color: #ffa07a !important;
+    }
+
+    .calendar-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+
+        .calendar-controls button {
+            background-color: #3b240d;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            font-size: 1.2rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+    .sidebar {
+        margin-left: 2rem;
+        flex-shrink: 0;
+    }
+
+        .sidebar img {
+            width: 200px;
+            height: auto;
+        }
+
+    .header-area {
+        margin-bottom: 2rem;
+    }
+
+        .header-area h2 {
+            font-family: 'Arial Black', sans-serif;
+            color: #3b240d;
+        }
+
+        .header-area select,
+        .header-area button,
+        .header-area input[type="date"] {
+            padding: 0.5rem;
+            font-size: 1rem;
+            margin-top: 0.5rem;
+        }
+</style>
+@if (ViewBag.ErrorMessage != null)
+{
+    <div class="alert alert-danger">
+        @ViewBag.ErrorMessage
+    </div>
+}
+
+@{
+    var plantingCategories = ViewBag.PlantingCategories as IEnumerable<valami.valami.Models.PlantingCalendar>;
 }
 
 <div id="Order-@Dnn.ModuleContext.ModuleId">
-    <div class="form-group">
-        <label for="orderSelector">Válassz egy rendelést:</label>
-        <select id="orderSelector" class="form-control">
+    <div class="header-area">
+        <label for="plantingCategorySelector">Növény kategória:</label>
+        <select id="plantingCategorySelector">
             <option value="">-- Kérlek válassz --</option>
-            @foreach (var order in Model)
+            @foreach (var category in plantingCategories ?? new List<valami.valami.Models.PlantingCalendar>())
             {
-                <option value="@order.Id">
-                    Rendelés: @order.Id
+                <option value="@category.Id" data-watering="@category.WateringIntervalDays" data-repotting="@category.RepottingIntervalMonths">
+                    @category.PlantType
                 </option>
             }
         </select>
+
+        <label for="plantingDate">Ültetési dátum:</label>
+        <input type="date" id="plantingDate" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
     </div>
-    @if (plantingCategories != null)
-{
-    <div class="form-group">
-        <label for="plantingCategorySelector">Válassz egy növény kategóriát:</label>
-        <select id="plantingCategorySelector" class="form-control">
-            <option value="">-- Kérlek válassz --</option>
-            @foreach (var category in plantingCategories)
-            {
-                <option value="@category.Id">
-                    Növény típusa: @category.PlantType
-                </option>
-            }
-        </select>
-    </div>
-}
-else
-{
-    <p>Nincs elérhető növénykategória.</p>
-}
-    <div id="calendar-container">
-            <table id="calendar" class="table table-bordered">
+
+    <div class="calendar-wrapper">
+        <div class="calendar-box">
+            <div class="calendar-controls">
+                <button id="prevMonth">&lt;</button>
+                <span></span>
+                <button id="nextMonth">&gt;</button>
+            </div>
+
+            <table id="calendar">
                 <thead>
                     <tr>
                         <th>Hétfő</th>
@@ -63,56 +164,191 @@ else
                         <th>Vasárnap</th>
                     </tr>
                 </thead>
-                <tbody>
-                    @for (int i = 0; i < (daysInMonth + (int)firstDayOfMonth.DayOfWeek - 1) / 7 + 1; i++)
-                    {
-                        <tr>
-                            @for (int j = 0; j < 7; j++)
-                            {
-                                int dayOfMonth = i * 7 + j - (int)firstDayOfMonth.DayOfWeek + 1;
-                                if (dayOfMonth > 0 && dayOfMonth <= daysInMonth)
-                                {
-                                    <td id="day-@dayOfMonth" class="calendar-day">
-                                        @dayOfMonth
-                                    </td>
-                                }
-                                else
-                                {
-                                    <td></td>
-                                }
-                            }
-                        </tr>
-                    }
-                </tbody>
+                <tbody></tbody>
             </table>
         </div>
+
+        <div class="sidebar">
+            <img src="/images/paradicsom.gif" alt="Paradicsom táncol" />
+        </div>
+    </div>
 </div>
 
 @section Scripts {
     <script>
         $(document).ready(function () {
-            var orders = @Html.Raw(json.Serialize(Model));
-            var selectedCategory = @Html.Raw(json.Serialize(selectedCategory));
+            let currentMonth = localStorage.getItem("calendarMonth") !== null ? parseInt(localStorage.getItem("calendarMonth")) : new Date().getMonth();
+            let currentYear = localStorage.getItem("calendarYear") !== null ? parseInt(localStorage.getItem("calendarYear")) : new Date().getFullYear();
 
-            var orderDate = new Date('2025-04-25'); // Example order date
-            var wateringInterval = selectedCategory ? selectedCategory.WateringIntervalDays : 7; // Default watering interval if category is not selected
+            let selectedWateringInterval = null;
+            let selectedRepottingInterval = null;
+            let selectedOrderDate = null;
 
-            // Calculate planting date (3 days after order date)
-            var plantingDate = new Date(orderDate);
-            plantingDate.setDate(orderDate.getDate() + 3); // Add 3 days to order date
+            const savedCategoryId = localStorage.getItem("selectedPlantCategoryId");
+            const savedPlantDate = localStorage.getItem("selectedPlantDate");
 
-            // Highlight the order date (red)
-            $("#day-" + orderDate.getDate()).addClass("order-date");
-
-            // Highlight the planting date (red)
-            $("#day-" + plantingDate.getDate()).addClass("planting-date");
-
-            // Highlight watering dates (blue)
-            var wateringDate = new Date(plantingDate);
-            while (wateringDate.getMonth() == plantingDate.getMonth()) {
-                $("#day-" + wateringDate.getDate()).addClass("watering-date");
-                wateringDate.setDate(wateringDate.getDate() + wateringInterval); // Move to the next watering date
+            if (savedCategoryId) {
+                $("#plantingCategorySelector").val(savedCategoryId);
+                const selectedOption = $("#plantingCategorySelector").find(":selected");
+                selectedWateringInterval = parseInt(selectedOption.data("watering")) || 7;
+                selectedRepottingInterval = parseInt(selectedOption.data("repotting")) || 90;
             }
+
+            if (savedPlantDate) {
+                $("#plantingDate").val(savedPlantDate);
+                selectedOrderDate = new Date(savedPlantDate);
+            }
+
+            function renderCalendar(year, month) {
+                const firstDay = new Date(year, month, 1);
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                const startDay = (firstDay.getDay() + 6) % 7;
+
+                let html = "";
+                let dayCounter = 1;
+                const totalCells = Math.ceil((startDay + daysInMonth) / 7) * 7;
+
+                for (let i = 0; i < totalCells / 7; i++) {
+                    html += "<tr>";
+                    for (let j = 0; j < 7; j++) {
+                        const cellIndex = i * 7 + j;
+                        if (cellIndex < startDay || dayCounter > daysInMonth) {
+                            html += "<td></td>";
+                        } else {
+                            html += `
+                                    <td id="day-${dayCounter}" class="calendar-day">
+                                        <div>${dayCounter}</div>
+                                        <img src="/Icons/weather/napos.png" style="width:20px; height:20px;" />
+                                    </td>`;
+                            dayCounter++;
+                        }
+                    }
+                    html += "</tr>";
+                }
+
+                $("#calendar tbody").html(html);
+                $(".calendar-controls span").text(`${year}. ${new Date(year, month).toLocaleString("hu-HU", { month: 'long' })}`);
+
+                if (selectedWateringInterval && selectedOrderDate) {
+                    highlightCalendar(selectedOrderDate, selectedWateringInterval, selectedRepottingInterval);
+                }
+            }
+
+            $("#plantingDate").on("change", function () {
+                const dateStr = $(this).val();
+                const dateObj = new Date(dateStr);
+                if (!isNaN(dateObj)) {
+                    selectedOrderDate = dateObj;
+                    if (selectedWateringInterval && selectedRepottingInterval) {
+                        highlightCalendar(selectedOrderDate, selectedWateringInterval, selectedRepottingInterval);
+                    }
+                }
+            });
+
+            $("#prevMonth").click(function () {
+                currentMonth--;
+                if (currentMonth < 0) {
+                    currentMonth = 11;
+                    currentYear--;
+                }
+                localStorage.setItem("calendarMonth", currentMonth);
+                localStorage.setItem("calendarYear", currentYear);
+                renderCalendar(currentYear, currentMonth);
+            });
+
+            $("#nextMonth").click(function () {
+                currentMonth++;
+                if (currentMonth > 11) {
+                    currentMonth = 0;
+                    currentYear++;
+                }
+                localStorage.setItem("calendarMonth", currentMonth);
+                localStorage.setItem("calendarYear", currentYear);
+                renderCalendar(currentYear, currentMonth);
+            });
+
+            $("#plantingCategorySelector, #plantingDate").on("change", function () {
+                const selectedOption = $("#plantingCategorySelector").find(":selected");
+                const dateInput = $("#plantingDate").val();
+
+                if (!selectedOption.val() || !dateInput) {
+                    clearCalendarHighlights();
+                    selectedWateringInterval = null;
+                    selectedRepottingInterval = null;
+                    selectedOrderDate = null;
+                    return;
+                }
+
+                selectedWateringInterval = parseInt(selectedOption.data("watering")) || 7;
+                selectedRepottingInterval = parseInt(selectedOption.data("repotting")) || 90;
+                selectedOrderDate = new Date(dateInput);
+
+                if (isNaN(selectedOrderDate.getTime())) {
+                    alert("Érvénytelen dátum.");
+                    return;
+                }
+
+                localStorage.setItem("selectedPlantCategoryId", selectedOption.val());
+                localStorage.setItem("selectedPlantDate", dateInput);
+
+                highlightCalendar(selectedOrderDate, selectedWateringInterval, selectedRepottingInterval);
+            });
+
+            function clearCalendarHighlights() {
+                $(".order-date, .planting-date, .watering-date, .repotting-date, .combined-date").removeClass("order-date planting-date watering-date repotting-date combined-date");
+            }
+
+            function highlightCalendar(orderDate, wateringInterval) {
+                clearCalendarHighlights();
+
+                const plantingDate = new Date(orderDate);
+                plantingDate.setDate(orderDate.getDate() + 3);
+
+                const displayedMonth = currentMonth;
+                const displayedYear = currentYear;
+
+                if (orderDate.getMonth() === displayedMonth && orderDate.getFullYear() === displayedYear) {
+                    $("#day-" + orderDate.getDate()).addClass("order-date");
+                }
+
+                if (plantingDate.getMonth() === displayedMonth && plantingDate.getFullYear() === displayedYear) {
+                    $("#day-" + plantingDate.getDate()).addClass("planting-date");
+                }
+
+                // 🌧️ Öntözési napok
+                let wateringDate = new Date(plantingDate);
+                const wateringDates = [];
+                while (wateringDate.getTime() < new Date(displayedYear, displayedMonth + 1, 1).getTime()) {
+                    if (wateringDate.getMonth() === displayedMonth && wateringDate.getFullYear() === displayedYear) {
+                        wateringDates.push(wateringDate.getDate());
+                    }
+                    wateringDate.setDate(wateringDate.getDate() + wateringInterval);
+                }
+
+                // 🪴 Átültetés nap
+                const repottingMonths = parseInt($("#plantingCategorySelector option:selected").data("repotting")) || 0;
+                const repottingDate = new Date(orderDate);
+                repottingDate.setDate(repottingDate.getDate() + repottingMonths * 30);
+
+                const repottingDay = (repottingDate.getMonth() === displayedMonth && repottingDate.getFullYear() === displayedYear)
+                    ? repottingDate.getDate()
+                    : null;
+
+                // 🔄 Kiemelés
+                for (const day of wateringDates) {
+                    if (day === repottingDay) {
+                        $("#day-" + day).addClass("combined-date");
+                    } else {
+                        $("#day-" + day).addClass("watering-date");
+                    }
+                }
+
+                if (repottingDay && !wateringDates.includes(repottingDay)) {
+                    $("#day-" + repottingDay).addClass("repotting-date");
+                }
+            }
+
+            renderCalendar(currentYear, currentMonth);
         });
     </script>
 }

@@ -14,8 +14,10 @@ using DotNetNuke.Entities.Users;
 using DotNetNuke.Framework.JavaScriptLibraries;
 using DotNetNuke.Web.Mvc.Framework.ActionFilters;
 using DotNetNuke.Web.Mvc.Framework.Controllers;
+using Hotcakes.Commerce;
 using Hotcakes.Modules.Core.Admin.Configuration;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
 using valami.valami.Components;
@@ -23,27 +25,84 @@ using valami.valami.Models;
 
 namespace valami.valami.Controllers
 {
+    
     [DnnHandleError]
     public class OrderController : DnnController
     {
+
         public ActionResult Index()
         {
-            var orders = OrderManager.Instance.GetOrders()
-                            .Where(o => o.UserId == User.UserID)
-                            .OrderByDescending(o => o.TimeOfOrder);
 
-            var plantingCategories = PlantingCalendarManager.Instance.GetPlantingCalendars();
+            
 
-            int? selectedCategoryId = plantingCategories?.FirstOrDefault()?.Id;
-            ViewBag.SelectedCategoryId = selectedCategoryId;
+            int userId = User != null ? User.UserID : -1;
+            try
+            {
+                var orders = OrderManager.Instance.GetOrders()
+                                .Where(o => o.UserId == userId)
+                                .OrderByDescending(o => o.TimeOfOrder)
+                                .ToList(); // biztos ami biztos
 
-            // ➕ Itt történik a konkrét kiválasztás
-            var selectedCategory = plantingCategories?.FirstOrDefault(c => c.Id == selectedCategoryId);
-            ViewBag.SelectedCategory = selectedCategory;
+                var plantingCategories = PlantingCalendarManager.Instance.GetPlantingCalendars()?.ToList();
+                System.Diagnostics.Debug.WriteLine("Lekérdezett rekordok száma: " + plantingCategories.Count());
 
-            //// Passing both orders and categories to the view
-            ViewBag.PlantingCategories = plantingCategories;
-            return View(orders);
+                foreach (var p in plantingCategories)
+                {
+                    System.Diagnostics.Debug.WriteLine($"ID: {p.Id}, PlantType: {p.PlantType}");
+                }
+
+                ViewBag.PlantingCategories = plantingCategories;
+                ViewBag.SelectedCategoryId = plantingCategories?.FirstOrDefault()?.Id ?? 0;
+                ViewBag.DebugCategoryId = plantingCategories != null && plantingCategories.Any()
+                ? plantingCategories.First().Id.ToString()
+                : "nincs";
+
+                System.Diagnostics.Debug.WriteLine("PlantingCategories rekordok: " + plantingCategories.Count);
+                return View(orders);
+            }
+            catch (Exception ex)
+            {
+                ViewBag.ErrorMessage = "Hiba történt az Index() betöltésekor: " + ex.Message;
+                return View(new List<Order>()); // visszatérünk üres listával, hogy legalább ne dobjon el
+            }
+            //int userId = User != null ? User.UserID : -1;
+            //try
+            //{
+            //    var orders = OrderManager.Instance.GetOrders()
+            //                    .Where(o => o.UserId == userId)
+            //                    .OrderByDescending(o => o.TimeOfOrder);
+
+            //    var plantingCategories = PlantingCalendarManager.Instance.GetPlantingCalendars();
+
+            //    ViewBag.PlantingCategories = plantingCategories;
+            //    ViewBag.SelectedCategoryId = plantingCategories?.FirstOrDefault()?.Id;
+            //    ViewBag.DebugCategoryId = plantingCategories?.FirstOrDefault().Id.ToString();
+
+
+
+            //    return View(orders);
+            //}
+            //catch (Exception ex)
+            //{
+            //    return Content("Hiba történt: " + ex.Message);
+            //}
+            //    var orders = OrderManager.Instance.GetOrders()
+            //                    .Where(o => o.UserId == User.UserID)
+            //                    .OrderByDescending(o => o.TimeOfOrder);
+
+            //    var plantingCategories = PlantingCalendarManager.Instance.GetPlantingCalendars();
+
+            //    int? selectedCategoryId = plantingCategories?.FirstOrDefault()?.Id;
+            //    ViewBag.SelectedCategoryId = selectedCategoryId;
+
+            //    // ➕ Itt történik a konkrét kiválasztás
+            //    var selectedCategory = plantingCategories?.FirstOrDefault(c => c.Id == selectedCategoryId);
+            //    ViewBag.SelectedCategory = selectedCategory;
+
+            //    //// Passing both orders and categories to the view
+            //    ViewBag.PlantingCategories = plantingCategories;
+            //    return View(orders);
+            //}
         }
     }
 }
