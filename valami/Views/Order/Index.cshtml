@@ -6,99 +6,9 @@
 @using DotNetNuke.Entities.Users
 @using DotNetNuke.Framework.JavaScriptLibraries
 
+<link rel="stylesheet" href="@Url.Content("~/DesktopModules/MVC/valami/module.css")" />
+
 <style>
-    .calendar-wrapper {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-top: 2rem;
-    }
-
-    .calendar-box {
-        flex: 1;
-        border-radius: 20px;
-        overflow: hidden;
-        border: 2px solid #3b240d;
-        box-shadow: 0 0 10px #ccc;
-    }
-
-    #calendar {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-        #calendar th,
-        #calendar td {
-            text-align: center;
-            border: 1px solid #ddd;
-            padding: 10px;
-            height: 80px;
-            width: 14.28%;
-            vertical-align: top;
-            position: relative;
-        }
-
-        #calendar th {
-            background-color: #3b240d;
-            color: white;
-            font-weight: bold;
-        }
-
-    .calendar-day {
-        font-size: 1.1rem;
-    }
-
-    .order-date {
-        background-color: #ff9999 !important;
-        font-weight: bold;
-    }
-
-    .planting-date {
-        background-color: #ffcc99 !important;
-        font-weight: bold;
-    }
-
-    .watering-date {
-        background-color: #99ecff !important;
-    }
-
-    .repotting-date {
-        background-color: #cc99ff !important;
-    }
-
-    .combined-date {
-        background-color: #ffa07a !important;
-    }
-
-    .calendar-controls {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1rem;
-        font-size: 1.5rem;
-        font-weight: bold;
-    }
-
-        .calendar-controls button {
-            background-color: #3b240d;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            font-size: 1.2rem;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-    .sidebar {
-        margin-left: 2rem;
-        flex-shrink: 0;
-    }
-
-        .sidebar img {
-            width: 200px;
-            height: auto;
-        }
-
     .header-area {
         margin-bottom: 2rem;
     }
@@ -106,6 +16,7 @@
         .header-area h2 {
             font-family: 'Arial Black', sans-serif;
             color: #3b240d;
+            font-size: 1rem;
         }
 
         .header-area select,
@@ -114,8 +25,12 @@
             padding: 0.5rem;
             font-size: 1rem;
             margin-top: 0.5rem;
+            border-radius: 20px 0px !important;
+            height: 55px;
         }
+
 </style>
+
 @if (ViewBag.ErrorMessage != null)
 {
     <div class="alert alert-danger">
@@ -143,46 +58,50 @@
         <label for="plantingDate">Ültetési dátum:</label>
         <input type="date" id="plantingDate" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
     </div>
+    <div class="calendar-container">
+        <div class="calendar-wrapper">
+            <div class="calendar-box">
+                <div class="calendar-controls">
+                    <button id="prevMonth">&lt;</button>
+                    <span></span>
+                    <button id="nextMonth">&gt;</button>
+                </div>
 
-    <div class="calendar-wrapper">
-        <div class="calendar-box">
-            <div class="calendar-controls">
-                <button id="prevMonth">&lt;</button>
-                <span></span>
-                <button id="nextMonth">&gt;</button>
+                <table id="calendar">
+                    <thead>
+                        <tr>
+                            <th>Hétfő</th>
+                            <th>Kedd</th>
+                            <th>Szerda</th>
+                            <th>Csütörtök</th>
+                            <th>Péntek</th>
+                            <th>Szombat</th>
+                            <th>Vasárnap</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
             </div>
 
-            <table id="calendar">
-                <thead>
-                    <tr>
-                        <th>Hétfő</th>
-                        <th>Kedd</th>
-                        <th>Szerda</th>
-                        <th>Csütörtök</th>
-                        <th>Péntek</th>
-                        <th>Szombat</th>
-                        <th>Vasárnap</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
 
+        </div>
         <div class="sidebar">
-            <img src="/images/paradicsom.gif" alt="Paradicsom táncol" />
+            <img id="sidebarImage" src="/images/tanci.gif" alt="Oldalsó illusztráció" />
         </div>
     </div>
 </div>
 
 @section Scripts {
     <script>
+        localStorage.removeItem("selectedPlantCategoryId");
+
         $(document).ready(function () {
             let currentMonth = localStorage.getItem("calendarMonth") !== null ? parseInt(localStorage.getItem("calendarMonth")) : new Date().getMonth();
             let currentYear = localStorage.getItem("calendarYear") !== null ? parseInt(localStorage.getItem("calendarYear")) : new Date().getFullYear();
 
             let selectedWateringInterval = null;
             let selectedRepottingInterval = null;
-            let selectedOrderDate = null;
+            let selectedPlantingDate = null;
 
             const savedCategoryId = localStorage.getItem("selectedPlantCategoryId");
             const savedPlantDate = localStorage.getItem("selectedPlantDate");
@@ -196,10 +115,25 @@
 
             if (savedPlantDate) {
                 $("#plantingDate").val(savedPlantDate);
-                selectedOrderDate = new Date(savedPlantDate);
+                selectedPlantingDate = new Date(savedPlantDate);
+            }
+
+            function getWeatherIcon(date) {
+                const formattedDate = date.toISOString().split('T')[0];  // Formázza a dátumot YYYY-MM-DD formátumban
+                return $.ajax({
+                    url: `/DesktopModules/MVC/valami/API/weather/${formattedDate}`,
+                    method: 'GET',
+                    success: function (data) {
+                        return data.iconUrl; // Visszaadja az ikont
+                    },
+                    error: function () {
+                        return "/images/nap2.png"; // Ha hiba történik, akkor alapértelmezett ikont ad vissza
+                    }
+                });
             }
 
             function renderCalendar(year, month) {
+
                 const firstDay = new Date(year, month, 1);
                 const daysInMonth = new Date(year, month + 1, 0).getDate();
                 const startDay = (firstDay.getDay() + 6) % 7;
@@ -216,10 +150,10 @@
                             html += "<td></td>";
                         } else {
                             html += `
-                                    <td id="day-${dayCounter}" class="calendar-day">
-                                        <div>${dayCounter}</div>
-                                        <img src="/Icons/weather/napos.png" style="width:20px; height:20px;" />
-                                    </td>`;
+                                                <td id="day-${dayCounter}" class="calendar-day">
+                                                    <div>${dayCounter}</div>
+                                                    <img id="weather-${dayCounter}" src="/images/nap2.png" style="width:20px; height:20px;" />
+                                                </td>`;
                             dayCounter++;
                         }
                     }
@@ -229,20 +163,55 @@
                 $("#calendar tbody").html(html);
                 $(".calendar-controls span").text(`${year}. ${new Date(year, month).toLocaleString("hu-HU", { month: 'long' })}`);
 
-                if (selectedWateringInterval && selectedOrderDate) {
-                    highlightCalendar(selectedOrderDate, selectedWateringInterval, selectedRepottingInterval);
+                if (selectedWateringInterval && selectedPlantingDate) {
+                    highlightCalendar(selectedPlantingDate, selectedWateringInterval, selectedRepottingInterval);
                 }
+
             }
 
             $("#plantingDate").on("change", function () {
                 const dateStr = $(this).val();
                 const dateObj = new Date(dateStr);
                 if (!isNaN(dateObj)) {
-                    selectedOrderDate = dateObj;
+                    selectedPlantingDate = dateObj;
                     if (selectedWateringInterval && selectedRepottingInterval) {
-                        highlightCalendar(selectedOrderDate, selectedWateringInterval, selectedRepottingInterval);
+                        highlightCalendar(selectedPlantingDate, selectedWateringInterval, selectedRepottingInterval);
                     }
                 }
+            });
+
+            $("#plantingCategorySelector, #plantingDate").on("change", function () {
+                const selectedOption = $("#plantingCategorySelector").find(":selected");
+                const dateInput = $("#plantingDate").val();
+
+                // If the default value is selected, hide the calendar and set the sidebar image
+                if (!selectedOption.val() || !dateInput) {
+                    clearCalendarHighlights();
+                    selectedWateringInterval = null;
+                    selectedRepottingInterval = null;
+                    selectedPlantingDate = null;
+                    $("#sidebarImage").attr("src", "/images/zoldik.gif"); // Set the sidebar image
+                    $("#calendar").hide(); // Hide the calendar
+                    $(".calendar-wrapper").hide();
+                    return;
+                }
+
+                selectedWateringInterval = parseInt(selectedOption.data("watering")) || 7;
+                selectedRepottingInterval = parseInt(selectedOption.data("repotting")) || 90;
+                selectedPlantingDate = new Date(dateInput);
+
+                if (isNaN(selectedPlantingDate.getTime())) {
+                    alert("Érvénytelen dátum.");
+                    return;
+                }
+
+                localStorage.setItem("selectedPlantCategoryId", selectedOption.val());
+                localStorage.setItem("selectedPlantDate", dateInput);
+
+                renderCalendar(currentYear, currentMonth);
+                highlightCalendar(selectedPlantingDate, selectedWateringInterval, selectedRepottingInterval);
+                $("#calendar").show(); // Show the calendar
+                $(".calendar-wrapper").show();
             });
 
             $("#prevMonth").click(function () {
@@ -267,84 +236,91 @@
                 renderCalendar(currentYear, currentMonth);
             });
 
-            $("#plantingCategorySelector, #plantingDate").on("change", function () {
-                const selectedOption = $("#plantingCategorySelector").find(":selected");
-                const dateInput = $("#plantingDate").val();
-
-                if (!selectedOption.val() || !dateInput) {
-                    clearCalendarHighlights();
-                    selectedWateringInterval = null;
-                    selectedRepottingInterval = null;
-                    selectedOrderDate = null;
-                    return;
-                }
-
-                selectedWateringInterval = parseInt(selectedOption.data("watering")) || 7;
-                selectedRepottingInterval = parseInt(selectedOption.data("repotting")) || 90;
-                selectedOrderDate = new Date(dateInput);
-
-                if (isNaN(selectedOrderDate.getTime())) {
-                    alert("Érvénytelen dátum.");
-                    return;
-                }
-
-                localStorage.setItem("selectedPlantCategoryId", selectedOption.val());
-                localStorage.setItem("selectedPlantDate", dateInput);
-
-                highlightCalendar(selectedOrderDate, selectedWateringInterval, selectedRepottingInterval);
-            });
-
             function clearCalendarHighlights() {
-                $(".order-date, .planting-date, .watering-date, .repotting-date, .combined-date").removeClass("order-date planting-date watering-date repotting-date combined-date");
+                $(".planting-date, .watering-date, .repotting-date, .combined-date").removeClass("planting-date watering-date repotting-date combined-date");
             }
 
-            function highlightCalendar(orderDate, wateringInterval) {
+            function highlightCalendar(plantingDate, wateringInterval, repottingInterval) {
                 clearCalendarHighlights();
-
-                const plantingDate = new Date(orderDate);
-                plantingDate.setDate(orderDate.getDate() + 3);
 
                 const displayedMonth = currentMonth;
                 const displayedYear = currentYear;
-
-                if (orderDate.getMonth() === displayedMonth && orderDate.getFullYear() === displayedYear) {
-                    $("#day-" + orderDate.getDate()).addClass("order-date");
-                }
 
                 if (plantingDate.getMonth() === displayedMonth && plantingDate.getFullYear() === displayedYear) {
                     $("#day-" + plantingDate.getDate()).addClass("planting-date");
                 }
 
-                // 🌧️ Öntözési napok
+                const wateringDays = [];
                 let wateringDate = new Date(plantingDate);
-                const wateringDates = [];
-                while (wateringDate.getTime() < new Date(displayedYear, displayedMonth + 1, 1).getTime()) {
+                while (wateringDate <= new Date(displayedYear, displayedMonth + 1, 0)) {
                     if (wateringDate.getMonth() === displayedMonth && wateringDate.getFullYear() === displayedYear) {
-                        wateringDates.push(wateringDate.getDate());
+                        wateringDays.push(wateringDate.getDate());
                     }
                     wateringDate.setDate(wateringDate.getDate() + wateringInterval);
                 }
 
-                // 🪴 Átültetés nap
-                const repottingMonths = parseInt($("#plantingCategorySelector option:selected").data("repotting")) || 0;
-                const repottingDate = new Date(orderDate);
-                repottingDate.setDate(repottingDate.getDate() + repottingMonths * 30);
-
-                const repottingDay = (repottingDate.getMonth() === displayedMonth && repottingDate.getFullYear() === displayedYear)
-                    ? repottingDate.getDate()
-                    : null;
-
-                // 🔄 Kiemelés
-                for (const day of wateringDates) {
-                    if (day === repottingDay) {
-                        $("#day-" + day).addClass("combined-date");
-                    } else {
-                        $("#day-" + day).addClass("watering-date");
+                const repottingDays = [];
+                let repottingDate = new Date(plantingDate);
+                while (repottingDate <= new Date(displayedYear, displayedMonth + 1, 0)) {
+                    if (repottingDate.getMonth() === displayedMonth && repottingDate.getFullYear() === displayedYear) {
+                        repottingDays.push(repottingDate.getDate());
                     }
+                    repottingDate.setDate(repottingDate.getDate() + repottingInterval * 30);
                 }
 
-                if (repottingDay && !wateringDates.includes(repottingDay)) {
-                    $("#day-" + repottingDay).addClass("repotting-date");
+                const highlightedDays = new Set();
+                wateringDays.forEach(day => highlightedDays.add(`w-${day}`));
+
+                repottingDays.forEach(day => {
+                    const isConflict = highlightedDays.has(`w-${day}`);
+                    if (isConflict) {
+                        $("#day-" + day).removeClass("watering-date").addClass("combined-date");
+                    } else {
+                        $("#day-" + day).addClass("repotting-date");
+                    }
+                });
+
+                wateringDays.forEach(day => {
+                    if (!repottingDays.includes(day)) {
+                        $("#day-" + day).addClass("watering-date");
+                    }
+                });
+
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                const plantingToday = plantingDate.getTime() === today.getTime();
+
+                let wateringToday = false;
+                let testWatering = new Date(plantingDate);
+                testWatering.setHours(0, 0, 0, 0);
+                while (testWatering <= today) {
+                    if (testWatering.getTime() === today.getTime()) {
+                        wateringToday = true;
+                        break;
+                    }
+                    testWatering.setDate(testWatering.getDate() + wateringInterval);
+                }
+
+                let repottingToday = false;
+                let testRepotting = new Date(plantingDate);
+                testRepotting.setHours(0, 0, 0, 0);
+                while (testRepotting <= today) {
+                    if (testRepotting.getTime() === today.getTime()) {
+                        repottingToday = true;
+                        break;
+                    }
+                    testRepotting.setDate(testRepotting.getDate() + repottingInterval * 30);
+                }
+
+                if (plantingToday || repottingToday) {
+                    $("#sidebarImage").attr("src", "/images/depis.gif");
+                } else if (wateringToday) {
+                    $("#sidebarImage").attr("src", "/images/licsilocsi.gif");
+                } else if (selectedOption == "-- Kérlek válassz --") {
+                    $("#sidebarImage").attr("src", "/images/licsilocsi.gif");
+                } else {
+                    $("#sidebarImage").attr("src", "/images/tanci.gif");
                 }
             }
 

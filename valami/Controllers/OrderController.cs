@@ -14,8 +14,8 @@ using DotNetNuke.Entities.Users;
 using DotNetNuke.Framework.JavaScriptLibraries;
 using DotNetNuke.Web.Mvc.Framework.ActionFilters;
 using DotNetNuke.Web.Mvc.Framework.Controllers;
-using Hotcakes.Commerce;
-using Hotcakes.Modules.Core.Admin.Configuration;
+//using Hotcakes.Commerce;
+//using Hotcakes.Modules.Core.Admin.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -104,5 +104,6 @@ namespace valami.valami.Controllers
             //    return View(orders);
             //}
         }
+
     }
 }
