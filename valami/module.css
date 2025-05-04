@@ -80,7 +80,6 @@
         border: none;
         padding: 5px 10px;
         font-size: 1.2rem;
-        border-radius: 4px;
         cursor: pointer;
     }
 
@@ -104,6 +103,7 @@
     .header-area h2 {
         font-family: 'Arial Black', sans-serif;
         color: #3b240d;
+        font-size: 1rem;
     }
 
     .header-area select,
@@ -113,4 +113,5 @@
         font-size: 1rem;
         margin-top: 0.5rem;
         border-radius: 20px 0px !important;
+        height: 55px;
     }
