@@ -8,6 +8,132 @@
 
 <link rel="stylesheet" href="@Url.Content("~/DesktopModules/MVC/valami/module.css")" />
 
+<style>
+    .calendar-container {
+        display: flex;
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 20px;
+        margin-top: 20px;
+        margin-left: auto;
+        margin-right: auto;
+        text-align: center;
+    }
+
+    .calendar-wrapper {
+        /*display: flex;
+        justify-content: space-between;
+        align-items: flex-start;*/
+        flex: 3;
+        margin-top: 2rem;
+    }
+
+    .calendar-box {
+        flex: 1;
+        border-radius: 20px 0px !important;
+        overflow: hidden;
+        border: 2px solid #3b240d;
+        box-shadow: 0 0 10px #ccc;
+    }
+
+    #calendar {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        #calendar th,
+        #calendar td {
+            text-align: center;
+            border: 1px solid #ddd;
+            padding: 10px;
+            height: 80px;
+            width: 14.28%;
+            vertical-align: top;
+            position: relative;
+        }
+
+        #calendar th {
+            background-color: #3b240d;
+            color: white;
+            font-weight: bold;
+        }
+
+    .calendar-day {
+        font-size: 1.1rem;
+    }
+
+    .planting-date {
+        background-color: #ffcc99 !important;
+        font-weight: bold !important
+    }
+
+    .watering-date {
+        background-color: #99ecff !important;
+    }
+
+    .repotting-date {
+        background-color: #cc99ff !important;
+    }
+
+    .combined-date {
+        background-color: #ffb347 !important;
+    }
+
+    .calendar-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+
+        .calendar-controls button {
+            background-color: #3b240d;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            border-radius: 0px;
+        }
+
+    .sidebar {
+        margin-left: 2rem;
+        flex-shrink: 0;
+    }
+
+        .sidebar img {
+            width: 300px;
+            height: auto;
+            display: block;
+            margin-top: 50%;
+            transform: translateY(-50%);
+        }
+
+    .header-area {
+        margin-bottom: 2rem;
+        margin-left: auto;
+    }
+
+        .header-area h2 {
+            font-family: 'Arial Black', sans-serif;
+            color: #3b240d;
+            font-size: 1rem;
+        }
+
+        .header-area select,
+        .header-area button,
+        .header-area input[type="date"] {
+            padding: 0.5rem;
+            font-size: 1rem;
+            margin-top: 0.5rem;
+            border-radius: 20px 0px !important;
+            height: 55px;
+        }
+
+</style>
+
 @if (ViewBag.ErrorMessage != null)
 {
     <div class="alert alert-danger">
@@ -70,7 +196,6 @@
 
 @section Scripts {
     <script>
-        localStorage.removeItem("selectedPlantCategoryId");
 
         $(document).ready(function () {
             let currentMonth = localStorage.getItem("calendarMonth") !== null ? parseInt(localStorage.getItem("calendarMonth")) : new Date().getMonth();
@@ -98,7 +223,7 @@
             function getWeatherIcon(date) {
                 const formattedDate = date.toISOString().split('T')[0];  // Formázza a dátumot YYYY-MM-DD formátumban
                 return $.ajax({
-                    url: `/DesktopModules/MVC/valami/API/weather/${formattedDate}`,
+                    url: `/DesktopModules/MVC/valami/API/GetWeatherIcon/${formattedDate}`,
                     method: 'GET',
                     success: function (data) {
                         return data.iconUrl; // Visszaadja az ikont
@@ -138,6 +263,12 @@
                 }
 
                 $("#calendar tbody").html(html);
+                if (selectedWateringInterval && selectedPlantingDate) {
+                    highlightCalendar(selectedPlantingDate, selectedWateringInterval, selectedRepottingInterval);
+                } else {
+                    // Ha nincs teendő, akkor is állítsuk be a képet
+                    $("#sidebarImage").attr("src", "/images/tanci.gif");
+                }
                 $(".calendar-controls span").text(`${year}. ${new Date(year, month).toLocaleString("hu-HU", { month: 'long' })}`);
 
                 if (selectedWateringInterval && selectedPlantingDate) {
@@ -218,8 +349,9 @@
             }
 
             function highlightCalendar(plantingDate, wateringInterval, repottingInterval) {
-                clearCalendarHighlights();
+                const selectedOption = $("#plantingCategorySelector").find(":selected");
 
+                clearCalendarHighlights();
                 const displayedMonth = currentMonth;
                 const displayedYear = currentYear;
 
@@ -293,8 +425,6 @@
                 if (plantingToday || repottingToday) {
                     $("#sidebarImage").attr("src", "/images/depis.gif");
                 } else if (wateringToday) {
-                    $("#sidebarImage").attr("src", "/images/licsilocsi.gif");
-                } else if (selectedOption == "-- Kérlek válassz --") {
                     $("#sidebarImage").attr("src", "/images/licsilocsi.gif");
                 } else {
                     $("#sidebarImage").attr("src", "/images/tanci.gif");
