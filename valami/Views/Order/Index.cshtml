@@ -15,8 +15,8 @@
         align-items: flex-start;
         gap: 20px;
         margin-top: 20px;
-        margin-left: 5%;
-        margin-right: 5%;
+        margin-left: auto;
+        margin-right: auto;
         text-align: center;
     }
 
@@ -223,13 +223,13 @@
             function getWeatherIcon(date) {
                 const formattedDate = date.toISOString().split('T')[0];  // Formázza a dátumot YYYY-MM-DD formátumban
                 return $.ajax({
-                    url: `/DesktopModules/MVC/valami/API/Weather/GetWeatherIcon?date=${formattedDate}`, // ✅ jó
+                    url: `/DesktopModules/MVC/valami/API/GetWeatherIcon/${formattedDate}`,
                     method: 'GET',
                     success: function (data) {
-                        return data.iconUrl;
+                        return data.iconUrl; // Visszaadja az ikont
                     },
                     error: function () {
-                        return "/images/nap2.png";
+                        return "/images/nap2.png"; // Ha hiba történik, akkor alapértelmezett ikont ad vissza
                     }
                 });
             }
