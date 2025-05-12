@@ -10,7 +10,8 @@ namespace valami.valami.Components
             mapRouteManager.MapHttpRoute(
                 moduleFolderName: "valami",
                 routeName: "default",
-                url: "{controller}/{action}",
+                url: "{controller}/{action}/{date}",
+                defaults: new { date = RouteParameter.Optional },
                 namespaces: new[] { "valami.valami.Controllers" }
             );
         }

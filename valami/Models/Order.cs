@@ -32,7 +32,5 @@ namespace valami.valami.Models
         public int UserId { get; set; }
         public string UserEmail { get; set; }
         public DateTime TimeOfOrder { get; set; }
-
-
     }
 }

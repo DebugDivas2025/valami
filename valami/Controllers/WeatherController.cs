@@ -26,7 +26,7 @@ namespace valami.valami.Controllers
                     iconFile = "nap2.png"; break;
             }
 
-            return Json(new { success = true, iconUrl = $"/images/{iconFile}" }, JsonRequestBehavior.AllowGet);
+            return Json(new { iconUrl = "/images/" + iconFile }, JsonRequestBehavior.AllowGet);
         }
     }
 }
