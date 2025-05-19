@@ -58,8 +58,6 @@ namespace valami.valami.Components
             return t;
         }
 
-
-
         protected override System.Func<IOrderManager> GetFactory()
         {
             return () => new OrderManager();

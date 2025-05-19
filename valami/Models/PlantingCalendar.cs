@@ -28,7 +28,7 @@ namespace valami.valami.Models
     public class PlantingCalendar
     {
         public int Id { get; set; }
-        public int ProductPropertyId { get; set; }
+        public long ProductPropertyId { get; set; }
         public string PlantType { get; set; }
         public int SuggestedPlantingMonth { get; set; }
         public int WateringIntervalDays { get; set; }

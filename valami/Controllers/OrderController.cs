@@ -33,10 +33,12 @@ namespace valami.valami.Controllers
             int userId = UserController.Instance.GetCurrentUserInfo().UserID;
             try
             {
-                var orders = OrderManager.Instance.GetOrders()
-                                .Where(o => o.UserId == userId)
-                                .OrderByDescending(o => o.TimeOfOrder)
-                                .ToList(); // biztos ami biztos
+                //var orders = OrderManager.Instance.GetOrders()
+                //                .Where(o => o.UserId == userId)
+                //                .OrderByDescending(o => o.TimeOfOrder)
+                //                .ToList(); // biztos ami biztos
+
+                var orders = new List<Order>();
 
                 var plantingCategories = PlantingCalendarManager.Instance.GetPlantingCalendars()?.ToList();
                 System.Diagnostics.Debug.WriteLine("Lekérdezett rekordok száma: " + plantingCategories.Count());
@@ -61,6 +63,19 @@ namespace valami.valami.Controllers
                 return View(new List<Order>()); // visszatérünk üres listával, hogy legalább ne dobjon el
             }
             
+        }
+
+        public ActionResult DebugCalendar()
+        {
+            try
+            {
+                var calendars = PlantingCalendarManager.Instance.GetPlantingCalendars();
+                return Content("Rekordok száma: " + calendars.Count());
+            }
+            catch (Exception ex)
+            {
+                return Content("HIBA: " + ex.Message);
+            }
         }
 
     }

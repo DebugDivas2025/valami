@@ -15,9 +15,10 @@
         align-items: flex-start;
         gap: 20px;
         margin-top: 20px;
-        margin-left: auto;
-        margin-right: auto;
-        text-align: center;
+        margin-left: 10px !important;
+        margin-right: 10px !important;
+        /*margin-left: auto !important;
+        margin-right: auto !important;*/
     }
 
     .calendar-wrapper {
@@ -131,8 +132,13 @@
             border-radius: 20px 0px !important;
             height: 55px;
         }
-
 </style>
+
+@if (ViewBag.PlantingCategories == null)
+{
+    <p style="color:red;">A PlantingCategories null</p>
+}
+
 
 @if (ViewBag.ErrorMessage != null)
 {
@@ -252,10 +258,10 @@
                             html += "<td></td>";
                         } else {
                             html += `
-                                                <td id="day-${dayCounter}" class="calendar-day">
-                                                    <div>${dayCounter}</div>
-                                                    <img id="weather-${dayCounter}" src="/images/nap2.png" style="width:20px; height:20px;" />
-                                                </td>`;
+                                                    <td id="day-${dayCounter}" class="calendar-day">
+                                                        <div>${dayCounter}</div>
+                                                        <img id="weather-${dayCounter}" src="/images/nap2.png" style="width:20px; height:20px;" />
+                                                    </td>`;
                             dayCounter++;
                         }
                     }
